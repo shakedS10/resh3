@@ -6,8 +6,7 @@
 #include <unistd.h> // For the close function
 #include <netinet/tcp.h> // For the TCP_CONGESTION option
 #include <time.h>
-#define BUFFER_SIZE 2097152
-#define MAX_SIZE 1024
+#include "MAXSIZES.h"
 
 char *util_generate_random_data(unsigned int size) {
  char *buffer = NULL;
@@ -121,10 +120,15 @@ int main(int argc, char *argv[])
         sent = 0;
         counter = MAX_SIZE;
         i = 1;
+        if(fileSize % counter != 0)
+        {
+            i = 0;
+        }
         while ((i <= fileSize / counter))
         {
-            printf("Sending data\n");
+            
             int isent = send(sock, data, counter, 0);
+            printf("Sending data %d\n", isent);
             if (isent < 0)
             {
                 printf("Send failed\n");

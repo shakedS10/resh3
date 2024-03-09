@@ -1,14 +1,21 @@
 CC = gcc
-
-# Define the flags for compiling C files
 CFLAGS = -Wall -g
 
 all: TCP_Receiver TCP_Sender
 
-TCP_Receiver: TCP_Receiver.c 
-	$(CC) $(CFLAGS) -o TCP_Receiver TCP_Receiver.c
+TCP_Receiver: TCP_Receiver.o 
+	$(CC) $(CFLAGS) -o TCP_Receiver TCP_Receiver.o
 
-TCP_Sender: TCP_Sender.c
-	$(CC) $(CFLAGS) -o TCP_Sender TCP_Sender.c
+TCP_Sender: TCP_Sender.o 
+	$(CC) $(CFLAGS) -o TCP_Sender TCP_Sender.o
+
+TCP_Receiver.o: TCP_Receiver.c MAXSIZES.h
+	$(CC) $(CFLAGS) -c TCP_Receiver.c
+
+TCP_Sender.o: TCP_Sender.c MAXSIZES.h
+	$(CC) $(CFLAGS) -c TCP_Sender.c
+
+.PHONY: clean all
+
 clean:
-	rm TCP_Receiver TCP_Sender
+	rm -f *.o TCP_Receiver TCP_Sender

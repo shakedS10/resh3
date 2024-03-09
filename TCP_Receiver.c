@@ -6,9 +6,8 @@
 #include <unistd.h>
 #include <netinet/tcp.h>
 #include <time.h>
+#include "MAXSIZES.h"
 
-#define MAX_SIZE 1024
-#define BUFFER_SIZE 2097152
 void print_time_and_bandwidth(clock_t start, clock_t end, int totalReceived) {
     double time_taken = ((double)(end - start)) / CLOCKS_PER_SEC; // in seconds
     double bandwidth = (totalReceived / 1024.0) / time_taken; // in KB/s
@@ -107,6 +106,11 @@ int main(int argc, char *argv[]) {
     
     int bytesRead;
     int onerecv = 0;
+    int currentsize = BUFFER_SIZE;
+    if(BUFFER_SIZE % MAX_SIZE != 0)
+    {
+        currentsize = BUFFER_SIZE+MAX_SIZE;
+    }
     
     while ((bytesRead = recv(client_socket, buffer, sizeof(buffer), 0)) > 0) {
         if (onerecv == 0 && counter > 1 && bytesRead >0)
@@ -124,7 +128,7 @@ int main(int argc, char *argv[]) {
         totalReceived += bytesRead;
         onerecv += MAX_SIZE;
         printf("Received %d bytes\n", onerecv);
-        if (onerecv >= BUFFER_SIZE)
+        if (onerecv >= currentsize)
         {         
             counter++;
             sprintf(filename, "received_data%d.txt", counter);
