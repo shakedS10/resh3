@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     {
         if (setsockopt(sock, IPPROTO_TCP, TCP_CONGESTION, "reno", strlen("reno")) < 0)
         {
-            printf("Error setting TCP congestion control algorithm\n");
+            printf("Invalid algorithm\n");
             close(sock);
             return 1;
         }
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     {
         if (setsockopt(sock, IPPROTO_TCP, TCP_CONGESTION, "cubic", strlen("cubic")) < 0)
         {
-            printf("Error setting TCP congestion control algorithm\n");
+            printf("Invalid algorithm\n");
             close(sock);
             return 1;
         }
@@ -87,11 +87,7 @@ int main(int argc, char *argv[])
         perror("Error opening file");
         return 1; // Return an error code
     }
-
-    // Write the buffer data to the file
     fwrite(fdata, sizeof(char), BUFFER_SIZE, file);
-
-    // Close the file
     fclose(file);
     FILE *fr = fopen("a.txt", "r");
     if (fr == NULL) {
@@ -117,14 +113,14 @@ int main(int argc, char *argv[])
     int i = 0;
     while (check == 1)
     {
-        sent = 0;
+        
         counter = MAX_SIZE;
         i = 1;
         if(fileSize % counter != 0)
         {
             i = 0;
         }
-        while ((i <= fileSize / counter))
+        while (i <= fileSize / counter)
         {
             
             int isent = send(sock, data, counter, 0);
@@ -140,6 +136,7 @@ int main(int argc, char *argv[])
             i++;
         }    
         char act; 
+        printf("%d\n", sent);
         printf("Do you want to send more data? (y/n)\n");
         scanf(" %c", &act);
         if (act == 'n')
@@ -152,6 +149,7 @@ int main(int argc, char *argv[])
         }
        
     }
+    free(data);
     printf("Data sent\n");
     printf("Sent: %d\n", sent);
     close(sock);
