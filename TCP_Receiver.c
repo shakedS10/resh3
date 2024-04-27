@@ -6,17 +6,27 @@
 #include <unistd.h>
 #include <netinet/tcp.h>
 #include <time.h>
+#include <sys/time.h>
 #include "MAXSIZES.h"
 
-void print_stats(clock_t start, clock_t end, int totalReceived) {
-    double time_taken = ((double)(end - start)) / CLOCKS_PER_SEC; 
+struct timeval start, end;
+void print_stats(struct timeval start, struct timeval end, int totalReceived) {
+    double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1e6;
     double bandwidth = (totalReceived / 1024.0) / time_taken; 
+    static double avgBandwidth = 0;
+    avgBandwidth += bandwidth;
+    static double avgTime = 0;
+    avgTime += time_taken;
+    static int counter = 0;
     printf("Time taken: %.2f seconds\n", time_taken);
     printf("Average Bandwidth: %.2f KB/s\n", bandwidth);
+    printf("--------------------------------\n");
+    printf("Average Time: %.2f seconds\n", avgTime / ++counter);
+    printf("Average Bandwidth: %.2f KB/s\n", avgBandwidth / counter);
 }
+
 int main(int argc, char *argv[]) {
     
-
     int port = atoi(argv[1]);
     char *algo = argv[2];
 
@@ -72,7 +82,7 @@ int main(int argc, char *argv[]) {
         close(server_socket);
         return 1;
     }
-    clock_t start = clock();
+    //clock_t start = clock();
     int totalReceived = 0;
     int counter = 1;
     char filename[40];
@@ -98,7 +108,7 @@ int main(int argc, char *argv[]) {
     {
         currentsize = BUFFER_SIZE+MAX_SIZE;
     }
-    
+    gettimeofday(&start, NULL);
     while ((bytesRead = recv(client_socket, buffer, sizeof(buffer), 0)) > 0) {
         if (onerecv > currentsize - MAX_SIZE)
         {         
@@ -106,6 +116,7 @@ int main(int argc, char *argv[]) {
             sprintf(filename, "received%d.txt", counter);
             fclose(file);
             onerecv = 0;
+            
         }
         if (onerecv == 0 && bytesRead>0)
         {
@@ -135,7 +146,7 @@ int main(int argc, char *argv[]) {
     printf("Total received: %d bytes\n", totalReceived);
     fclose(file);
 
-    clock_t end = clock();
+    gettimeofday(&end, NULL);
     print_stats(start, end, totalReceived);
     close(client_socket);
     close(server_socket);
